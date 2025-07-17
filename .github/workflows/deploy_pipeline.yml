@@ -334,6 +334,6 @@ jobs:
         working-directory: ./flyway-${{ env.FLYWAY_VERSION }}
         run: 
           flyway -url=${{ env.FLYWAY_URL }} \
-            -user=${{ env,FLYWAY_USER }} \
+            -user=${{ env.FLYWAY_USER }} \
             -password=${{ env.FLYWAY_PASSWORD }} \
             -locations=${{ env.FLYWAY_LOCATION }} migrate
