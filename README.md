@@ -1,6 +1,4 @@
-Here's a comprehensive **README.md** for your GitHub repository, based on your detailed CI/CD pipeline project using **GitHub Actions**, **Terraform**, **AWS**, and **Docker**.
 
----
 
 # 🚀 CI/CD Pipeline with GitHub Actions, Terraform, Docker & AWS
 
@@ -93,134 +91,162 @@ Store the following secrets in your GitHub repo:
 
 ## 🧱 GitHub Actions Workflow Jobs
 
-### 1. Configure AWS Credentials
+### ✅ 1. Configure AWS Credentials
 
-Authenticate with AWS using the credentials stored as GitHub Secrets.
+➡️ See `"configure aws credentials"` section in `deploy_pipeline.yml`
 
-### 2. Build AWS Infrastructure
-
-Deploy VPC, Subnets, ALB, Security Groups, ECS Cluster, RDS, S3, and Route 53.
-
-### 3. Destroy AWS Infrastructure
-
-Destroys all previously created resources. To trigger this, change:
-
-```yaml
-terraform apply
-```
-
-to:
-
-```yaml
-terraform destroy
-```
-
-### 4. Create ECR Repository
-
-Prepares a private Docker registry in AWS to store the image.
+Authenticates with AWS using GitHub secrets.
 
 ---
 
-## 🏃‍♂️ Self-Hosted Runner (EC2)
+### 🏗️ 2. Build AWS Infrastructure
 
-1. Create a key pair
-2. Launch EC2 (Amazon Linux 2)
-3. SSH into the instance and install Docker, Git
-4. Create an AMI from the EC2
-5. Terminate the EC2 (we'll use the AMI)
+➡️ See `"build aws infrastructure"` section in `deploy_pipeline.yml`
 
-### 5. Start Self-Hosted EC2 Runner
+Uses Terraform to create:
 
-Use the AMI to launch the EC2 instance in the private subnet to serve as the runner.
-
----
-
-## 🐳 Docker Build & Push
-
-### 6. Build and Push Docker Image
-
-Clone the `application-codes` repo and:
-
-* Add application source code
-* Create `Dockerfile`
-* Add `appserviceprovider.php` to redirect HTTP → HTTPS
-* This job builds and pushes the Docker image to ECR
+* VPC, Subnets, NAT Gateway, Internet Gateway
+* ALB, Security Groups
+* ECS Cluster, ECS Service
+* S3, RDS, IAM Roles
+* Route 53
 
 ---
 
-## 📦 Environment Variables
+### 🔥 3. Destroy AWS Infrastructure
 
-### 7. Create & Upload Environment File to S3
+➡️ See `"build aws infrastructure"` section in `deploy_pipeline.yml` (Change `apply` to `destroy` on line 11)
 
-Generate a `.env` file and upload to S3 for ECS to access environment variables.
+Tears down all infrastructure when triggered. Useful for cleanup.
+
+---
+
+### 🐳 4. Create ECR Repository
+
+➡️ See `"Create ECR repository"` section in `deploy_pipeline.yml`
+
+Prepares an Amazon ECR registry for storing Docker images.
+
+---
+
+## 🏃‍♂️ Self-Hosted EC2 Runner Setup
+
+1. Launch EC2 instance (Amazon Linux 2)
+2. SSH into it:
+
+   ```bash
+   ssh -i "your-key.pem" ec2-user@<public-ip>
+   ```
+3. Install Docker & Git:
+
+   ```bash
+   sudo yum update -y
+   sudo yum install docker git libicu -y
+   sudo systemctl enable docker
+   ```
+4. Create AMI from EC2 and then **terminate** the EC2 instance.
+
+---
+
+### 🖥️ 5. Start Self-Hosted EC2 Runner
+
+➡️ See `"Start self-hosted EC2 runner"` section in `deploy_pipeline.yml`
+
+Launches EC2 instance from the AMI into the private subnet.
+🧵 Runs in **parallel** with the `"Create ECR repository"` job.
+
+---
+
+## 🧱 Application Deployment
+
+### 📦 6. Build & Push Docker Image to ECR
+
+➡️ See `"Build and push Docker image to ECR"` section in `deploy_pipeline.yml`
+
+1. Create a new repo for application code
+2. Clone it and add source code
+3. Add:
+
+   * `Dockerfile`
+   * `appserviceprovider.php` (for HTTPS redirection)
+4. This job builds the image and pushes it to ECR
+
+---
+
+### 🧾 7. Create Environment File & Upload to S3
+
+➡️ See `"Create environment file and export to S3"` section in `deploy_pipeline.yml`
+
+Generates a `.env` file and uploads it to S3, so ECS tasks can access environment variables.
 
 ---
 
 ## 🛢️ Database Migration
 
-### 8. Migrate Data into RDS using Flyway
+Before running the next job:
 
-Before this step:
+* Create a `sql/` folder
+* Add migration script (`.sql`)
 
-* Create `/sql` folder
-* Place your `.sql` migration script there
+### 🧬 8. Migrate Data into RDS using Flyway
 
-Runs Flyway inside the EC2 runner to apply the SQL script.
+➡️ See `"Migrate data into RDS database with Flyway"` section in `deploy_pipeline.yml`
 
----
-
-## 🛑 Stop Runner
-
-### 9. Stop Self-Hosted EC2 Runner
-
-Terminates the EC2 runner to avoid reuse (Flyway conflicts if reused).
+Executes Flyway from the self-hosted EC2 runner to apply SQL migrations to the RDS instance.
 
 ---
 
-## 🔁 ECS & Deployment
+### 🛑 9. Stop the Self-Hosted EC2 Runner
 
-### 10. Create ECS Task Definition Revision
+➡️ See `"Stop the self-hosted EC2 runner"` section in `deploy_pipeline.yml`
 
-Updates ECS task definition to use the newly built Docker image.
-
-### 11. Restart ECS Fargate Service
-
-Restarts ECS service to use the latest task definition.
+Terminates the self-hosted runner after its job completes to avoid reuse (e.g., Flyway conflict).
 
 ---
 
-## 🌐 Deployment Test
+## ⚙️ ECS Deployment
 
-* Visit your **Route 53 domain name** in the browser.
-* Application should be live and served over HTTPS.
+### 🆕 10. Create ECS Task Definition Revision
+
+➡️ See `"Create new task definition revision"` section in `deploy_pipeline.yml`
+
+Creates a new task definition revision that uses the Docker image built earlier.
 
 ---
 
-## 📘 How to Run the Pipeline
+### 🔁 11. Restart ECS Fargate Service
+
+➡️ See `"Restart ECS Fargate service"` section in `deploy_pipeline.yml`
+
+Forces ECS Fargate to deploy the new task definition so your latest application image is live.
+
+---
+
+## 🌐 Final Deployment Test
+
+Open your registered **Route 53 domain name** in a browser.
+✅ The deployed application should load successfully over **HTTPS**.
+
+---
+
+## 📘 Running the Pipeline
 
 To deploy:
 
-* Push code to `main` branch (or configure trigger branch)
-* GitHub Actions will handle the deployment pipeline
+* Push code to `main` branch (or configured trigger)
+* GitHub Actions will automatically run the workflow
 
 To destroy:
 
-* Change `terraform apply` → `terraform destroy` in the workflow
+* Change `terraform apply` to `terraform destroy` in the `"build aws infrastructure"` job
 
 ---
 
 ## 🧾 Notes
 
-* Use `.gitignore` responsibly — include `.tfvars` during pipeline development
-* Store sensitive data only in **AWS Secrets Manager** or **GitHub Secrets**
-* Make sure all job dependencies and sequencing are clearly defined in the YAML file
+* Ensure `.tfvars` files are **not excluded** if needed in pipeline
+* Use **AWS Secrets Manager** and **GitHub Secrets** for sensitive data
+* Keep your runner AMIs updated for security and compatibility
 
 ---
 
-## 🤝 Credits
-
-Infrastructure pipeline inspired by modern DevOps practices using GitHub Actions, Terraform, and AWS services.
-
----
-
-Let me know if you'd like the actual `deploy_pipeline.yml` sample or any diagrams added.
