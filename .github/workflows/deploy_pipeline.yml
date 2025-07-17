@@ -330,12 +330,10 @@ jobs:
           FLYWAY_URL: jdbc:mysql://${{ needs.deploy_aws_infrastructure.outputs.rds_endpoint }}:3306/${{ secrets.RDS_DB_NAME }}
           FLYWAY_USER: ${{ secrets.RDS_DB_USERNAME }}
           FLYWAY_PASSWORD: ${{ secrets.RDS_DB_PASSWORD }}
-          FLYWAY_LOCATION: filesystem:./sql
+          FLYWAY_LOCATION: filesystem:sql
         working-directory: ./flyway-${{ env.FLYWAY_VERSION }}
         run: |
-          flyway \
-            -url="${FLYWAY_URL}" \
-            -user="${FLYWAY_USER}" \
-            -password="${FLYWAY_PASSWORD}" \
-            -locations="${FLYWAY_LOCATION}" \
-             migrate
+          flyway -url=${{ env.FLYWAY_URL }} \
+            -user=${{ env.FLYWAY_USER }} \
+            -password=${{ env.FLYWAY_PASSWORD }} \
+            -locations=${{ env.FLYWAY_LOCATION }} migrate
