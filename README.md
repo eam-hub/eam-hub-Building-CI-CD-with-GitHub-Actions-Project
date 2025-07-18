@@ -97,6 +97,9 @@ Store the following secrets in your GitHub repo:
 
 Authenticates with AWS using GitHub secrets.
 
+
+<img width="975" height="210" alt="image" src="https://github.com/user-attachments/assets/f10b6f2e-6329-4c11-a121-2d4131e2b2eb" />
+
 ---
 
 ### 🏗️ 2. Build AWS Infrastructure
@@ -111,6 +114,9 @@ Uses Terraform to create:
 * S3, RDS, IAM Roles
 * Route 53
 
+
+<img width="975" height="202" alt="image" src="https://github.com/user-attachments/assets/bd5c6f5a-dbad-457a-bf7e-c058f6a60dbe" />
+
 ---
 
 ### 🔥 3. Destroy AWS Infrastructure
@@ -119,13 +125,18 @@ Uses Terraform to create:
 
 Tears down all infrastructure when triggered. Useful for cleanup.
 
+
 ---
 
 ### 🐳 4. Create ECR Repository
 
 ➡️ See `"Create ECR repository"` section in `deploy_pipeline.yml`
 
-Prepares an Amazon ECR registry for storing Docker images.
+Prepares an Amazon ECR registry for storing Docker images. (Remember to change `detroy` back to `apply` on line 11)
+
+
+
+<img width="975" height="209" alt="image" src="https://github.com/user-attachments/assets/7efbc9eb-c014-47e9-b3db-1c9fa152aca0" />
 
 ---
 
@@ -155,6 +166,9 @@ Prepares an Amazon ECR registry for storing Docker images.
 Launches EC2 instance from the AMI into the private subnet.
 🧵 Runs in **parallel** with the `"Create ECR repository"` job.
 
+
+<img width="975" height="267" alt="image" src="https://github.com/user-attachments/assets/49767ad1-977e-4fe1-864b-3bb9e19ba928" />
+
 ---
 
 ## 🧱 Application Deployment
@@ -171,6 +185,9 @@ Launches EC2 instance from the AMI into the private subnet.
    * `appserviceprovider.php` (for HTTPS redirection)
 4. This job builds the image and pushes it to ECR
 
+
+<img width="975" height="263" alt="image" src="https://github.com/user-attachments/assets/09282d77-de07-441d-90d6-2793654c63e4" />
+
 ---
 
 ### 🧾 7. Create Environment File & Upload to S3
@@ -178,6 +195,9 @@ Launches EC2 instance from the AMI into the private subnet.
 ➡️ See `"Create environment file and export to S3"` section in `deploy_pipeline.yml`
 
 Generates a `.env` file and uploads it to S3, so ECS tasks can access environment variables.
+
+
+<img width="975" height="296" alt="image" src="https://github.com/user-attachments/assets/0ec0b7b8-37ad-4bf1-9781-f302245dc4dd" />
 
 ---
 
@@ -194,13 +214,18 @@ Before running the next job:
 
 Executes Flyway from the self-hosted EC2 runner to apply SQL migrations to the RDS instance.
 
+<img width="975" height="294" alt="image" src="https://github.com/user-attachments/assets/28f81fb3-d96d-4981-82f2-c9f615185e88" />
+
 ---
 
 ### 🛑 9. Stop the Self-Hosted EC2 Runner
 
 ➡️ See `"Stop the self-hosted EC2 runner"` section in `deploy_pipeline.yml`
 
-Terminates the self-hosted runner after its job completes to avoid reuse (e.g., Flyway conflict).
+Terminates the self-hosted runner after its job completes to avoid reuse (e.g., Flyway conflict). first terminate the current EC2 running in the console
+
+<img width="975" height="299" alt="image" src="https://github.com/user-attachments/assets/7fc8a19a-d4d0-4ef9-b450-b8aa4045be83" />
+
 
 ---
 
@@ -211,6 +236,9 @@ Terminates the self-hosted runner after its job completes to avoid reuse (e.g., 
 ➡️ See `"Create new task definition revision"` section in `deploy_pipeline.yml`
 
 Creates a new task definition revision that uses the Docker image built earlier.
+
+
+<img width="975" height="296" alt="image" src="https://github.com/user-attachments/assets/d5fefb4d-1b5c-4025-8f9e-c62e929250f8" />
 
 ---
 
@@ -226,6 +254,7 @@ Forces ECS Fargate to deploy the new task definition so your latest application 
 
 Open your registered **Route 53 domain name** in a browser.
 ✅ The deployed application should load successfully over **HTTPS**.
+
 
 ---
 
