@@ -248,6 +248,10 @@ Creates a new task definition revision that uses the Docker image built earlier.
 
 Forces ECS Fargate to deploy the new task definition so your latest application image is live.
 
+
+
+<img width="1422" height="432" alt="image" src="https://github.com/user-attachments/assets/c1d5cfa2-745c-4514-bab9-140bcdfdc68f" />
+
 ---
 
 ## 🌐 Final Deployment Test
@@ -255,6 +259,7 @@ Forces ECS Fargate to deploy the new task definition so your latest application 
 Open your registered **Route 53 domain name** in a browser.
 ✅ The deployed application should load successfully over **HTTPS**.
 
+<img width="1897" height="1083" alt="image" src="https://github.com/user-attachments/assets/c1475957-8ad4-4ea8-abad-e4c44df2515f" />
 
 ---
 
